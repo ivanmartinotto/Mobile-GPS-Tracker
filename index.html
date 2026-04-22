@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GPS Publisher</title>
+  <style>
+    body {
+      font-family: -apple-system, sans-serif;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f0f0f0;
+    }
+    h1 { font-size: 1.3em; }
+    label, input, button {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      margin: 8px 0;
+      font-size: 16px;
+    }
+    input { padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
+    button {
+      padding: 14px;
+      border: none;
+      border-radius: 6px;
+      background: #007aff;
+      color: white;
+      font-weight: bold;
+    }
+    button:disabled { background: #999; }
+    button.stop { background: #ff3b30; }
+    #status {
+      margin-top: 20px;
+      padding: 12px;
+      background: white;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .dot {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    .on  { background: #34c759; }
+    .off { background: #ff3b30; }
+  </style>
+</head>
+<body>
+  <h1>GPS Publisher (MQTT/WebSocket)</h1>
+
+  <label>ID do dispositivo:</label>
+  <input id="deviceId" value="iphone_01">
+
+  <label>Tópico base:</label>
+  <input id="topicBase" value="ufscar/automacao/gps">
+
+  <label>Intervalo (segundos):</label>
+  <input id="interval" type="number" value="5" min="1">
+
+  <button id="startBtn">Iniciar</button>
+  <button id="stopBtn" class="stop" disabled>Parar</button>
+
+  <div id="status">
+    <div><span class="dot off" id="connDot"></span>Desconectado</div>
+    <div id="lastMsg">Aguardando...</div>
+  </div>
+
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script>
+    const BROKER_URL = "wss://broker.hivemq.com:8884/mqtt";
+
+    let client = null;
+    let watchId = null;
+    let publishTimer = null;
+    let lastPosition = null;
+
+    const $ = id => document.getElementById(id);
+    const setStatus = (connected, msg) => {
+      $("connDot").className = "dot " + (connected ? "on" : "off");
+      if (msg) $("lastMsg").textContent = msg;
+    };
+
+    $("startBtn").onclick = () => {
+      const deviceId = $("deviceId").value.trim();
+      const topicBase = $("topicBase").value.trim();
+      const intervalMs = parseInt($("interval").value) * 1000;
+      const topic = `${topicBase}/${deviceId}`;
+
+      client = mqtt.connect(BROKER_URL, {
+        clientId: "pwa_" + deviceId + "_" + Math.random().toString(16).slice(2, 8),
+        clean: true,
+        reconnectPeriod: 2000,
+      });
+
+      client.on("connect", () => {
+        setStatus(true, `Conectado. Publicando em:\n${topic}`);
+      });
+      client.on("error", err => setStatus(false, "Erro MQTT: " + err.message));
+      client.on("close", () => setStatus(false, "Conexão fechada"));
+
+      // Rastreia posição continuamente (mais preciso que getCurrentPosition)
+      watchId = navigator.geolocation.watchPosition(
+        pos => { lastPosition = pos; },
+        err => setStatus(client.connected, "Erro GPS: " + err.message),
+        { enableHighAccuracy: true, maximumAge: 1000, timeout: 10000 }
+      );
+
+      // Publica no intervalo configurado
+      publishTimer = setInterval(() => {
+        if (!client.connected || !lastPosition) return;
+        const c = lastPosition.coords;
+        const payload = {
+          device_id: deviceId,
+          timestamp: lastPosition.timestamp / 1000,
+          latitude: c.latitude,
+          longitude: c.longitude,
+          accuracy: c.accuracy,
+          altitude: c.altitude,
+        };
+        client.publish(topic, JSON.stringify(payload), { qos: 1 });
+        $("lastMsg").textContent =
+          `Enviado ${new Date().toLocaleTimeString()}\n` +
+          `lat=${c.latitude.toFixed(6)}\n` +
+          `lon=${c.longitude.toFixed(6)}\n` +
+          `acc=${c.accuracy.toFixed(1)} m`;
+      }, intervalMs);
+
+      $("startBtn").disabled = true;
+      $("stopBtn").disabled = false;
+    };
+
+    $("stopBtn").onclick = () => {
+      if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+      if (publishTimer) clearInterval(publishTimer);
+      if (client) client.end();
+      setStatus(false, "Parado");
+      $("startBtn").disabled = false;
+      $("stopBtn").disabled = true;
+    };
+  </script>
+</body>
+</html>
