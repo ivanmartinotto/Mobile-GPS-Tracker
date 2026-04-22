@@ -42,7 +42,7 @@ Implementa um sistema distribuído que coleta a localização GPS de múltiplos 
 .
 ├── README.md              # este arquivo
 ├── server.py              # subscriber que imprime no terminal
-├── gps_publisher.py       # publisher para Android via Termux
+├── termux_publisher.py       # publisher para Android via Termux
 └── index.html             # publisher PWA para iPhone (ou qualquer navegador)
 ```
 
@@ -129,7 +129,7 @@ Abra o script e ajuste a variável `DEVICE_ID` para algo único, ex: `android_01
 ### 2.4. Executar
 
 ```bash
-python gps_publisher.py
+python termux_publisher.py
 ```
 
 Saída esperada no celular:
@@ -150,27 +150,13 @@ O iPhone não suporta Termux. A solução é uma página web que usa a Geolocati
 
 A Geolocation API só funciona em páginas servidas via **HTTPS** (exceto `localhost`). Abrir o `index.html` com duplo clique, ou servir via HTTP comum, não funciona no iPhone. É necessário hospedar o arquivo em um servidor com TLS.
 
-### 3.2. Opção A — GitHub Pages (recomendado)
+### 3.2. Opção Escolhida — GitHub Pages 
 
 1. Crie um repositório público no GitHub e faça upload do `index.html`.
 2. Vá em **Settings > Pages**.
 3. Em **Source**, selecione a branch `main` e a pasta `/ (root)`. Salve.
 4. Após 1–2 minutos, o GitHub fornece uma URL HTTPS tipo `https://seuusuario.github.io/nome-do-repo/`.
 5. Abra essa URL no Safari do iPhone.
-
-### 3.3. Opção B — Servidor local com ngrok
-
-Útil para desenvolvimento rápido sem publicar o arquivo online.
-
-```bash
-# Em um terminal, sirva o arquivo local:
-python -m http.server 8000
-
-# Em outro terminal, exponha via HTTPS com ngrok:
-ngrok http 8000
-```
-
-O ngrok fornece uma URL temporária `https://xxxx.ngrok.io`. Abra essa URL no Safari do iPhone.
 
 ### 3.4. Usar no iPhone
 
@@ -241,7 +227,7 @@ Experimentos sugeridos:
 
 Para um cenário mais próximo de aplicações reais, migrar para o **HiveMQ Cloud** (gratuito, com TLS e autenticação) é o próximo passo. Apenas as seguintes linhas precisariam mudar:
 
-- No `server.py` e no `gps_publisher.py`: trocar host, porta (`8883`), habilitar TLS e adicionar `username_pw_set`.
+- No `server.py` e no `termux_publisher.py`: trocar host, porta (`8883`), habilitar TLS e adicionar `username_pw_set`.
 - No `index.html`: trocar a URL para `wss://seu-cluster.hivemq.cloud:8884/mqtt` e passar `username` e `password` no `mqtt.connect`.
 
 ---
