@@ -4,7 +4,7 @@ import paho.mqtt.client as mqtt
 
 BROKER = "broker.hivemq.com"
 PORT = 1883
-TOPIC = "ufscar/automacao/gps/+"   # '+' captura qualquer device_id
+TOPIC = "automacao/ufscar/gps/+"   # '+' captura qualquer device_id
 
 
 def on_connect(client, userdata, flags, rc, properties=None):

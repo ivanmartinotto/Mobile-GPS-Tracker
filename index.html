@@ -58,7 +58,7 @@
   <input id="deviceId" value="iphone_01">
 
   <label>Tópico base:</label>
-  <input id="topicBase" value="ufscar/automacao/gps">
+  <input id="topicBase" value="automacao/ufscar/gps">
 
   <label>Intervalo (segundos):</label>
   <input id="interval" type="number" value="5" min="1">
@@ -104,7 +104,7 @@
       client.on("error", err => setStatus(false, "Erro MQTT: " + err.message));
       client.on("close", () => setStatus(false, "Conexão fechada"));
 
-      // Rastreia posição continuamente (mais preciso que getCurrentPosition)
+      // Rastreia posição continuamente 
       watchId = navigator.geolocation.watchPosition(
         pos => { lastPosition = pos; },
         err => setStatus(client.connected, "Erro GPS: " + err.message),

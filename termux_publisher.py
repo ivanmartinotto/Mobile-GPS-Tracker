@@ -4,9 +4,9 @@ import subprocess
 import socket
 import paho.mqtt.client as mqtt
 
-BROKER = "broker.hivemq.com"   # broker público para testes
+BROKER = "broker.hivemq.com"   # broker público 
 PORT = 1883
-DEVICE_ID = socket.gethostname()  # ou defina manualmente: "celular_01"
+DEVICE_ID = "celular_01"
 TOPIC = f"automacao/ufscar/gps/{DEVICE_ID}"
 INTERVAL = 5  # segundos
 

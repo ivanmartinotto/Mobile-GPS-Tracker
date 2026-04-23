@@ -20,7 +20,7 @@ Implementa um sistema distribuído que coleta a localização GPS de múltiplos 
 - **Broker:** HiveMQ público (`broker.hivemq.com`) roteia as mensagens entre publishers e subscribers.
 - **Subscriber:** script Python que se inscreve nos tópicos e imprime as localizações no terminal.
 
-**Tópico padrão:** `ufscar/automacao/gps/<device_id>`
+**Tópico padrão:** `automacao/ufscar/gps/<device_id>`
 
 **Payload (JSON):**
 ```json
@@ -42,7 +42,7 @@ Implementa um sistema distribuído que coleta a localização GPS de múltiplos 
 .
 ├── README.md              # este arquivo
 ├── server.py              # subscriber que imprime no terminal
-├── gps_publisher.py       # publisher para Android via Termux
+├── termux_publisher.py       # publisher para Android via Termux
 └── index.html             # publisher PWA para iPhone (ou qualquer navegador)
 ```
 
@@ -59,7 +59,7 @@ Implementa um sistema distribuído que coleta a localização GPS de múltiplos 
 
 ## 1. Servidor (server.py)
 
-O servidor se inscreve no tópico `ufscar/automacao/gps/+` e imprime toda mensagem recebida, independente de qual celular publicou.
+O servidor se inscreve no tópico `automacao/ufscar/gps/+` e imprime toda mensagem recebida, independente de qual celular publicou.
 
 ### Instalação
 
@@ -78,7 +78,7 @@ python server.py
 ```
 [14:32:05] Conectando em broker.hivemq.com:1883...
 [14:32:06] Conectado ao broker broker.hivemq.com:1883
-[14:32:06] Inscrito em: ufscar/automacao/gps/+
+[14:32:06] Inscrito em: automacao/ufscar/gps/+
 
 [14:32:10] iphone_01    | lat=-22.007845 | lon=-47.890123 | acc=  10.5 m | alt=825.3 m
 [14:32:15] iphone_01    | lat=-22.007847 | lon=-47.890121 | acc=   9.8 m | alt=825.1 m
@@ -129,7 +129,7 @@ Abra o script e ajuste a variável `DEVICE_ID` para algo único, ex: `android_01
 ### 2.4. Executar
 
 ```bash
-python gps_publisher.py
+python termux_publisher.py
 ```
 
 Saída esperada no celular:
@@ -150,33 +150,19 @@ O iPhone não suporta Termux. A solução é uma página web que usa a Geolocati
 
 A Geolocation API só funciona em páginas servidas via **HTTPS** (exceto `localhost`). Abrir o `index.html` com duplo clique, ou servir via HTTP comum, não funciona no iPhone. É necessário hospedar o arquivo em um servidor com TLS.
 
-### 3.2. Opção A — GitHub Pages (recomendado)
+### 3.2. Opção Escolhida — GitHub Pages 
 
 1. Crie um repositório público no GitHub e faça upload do `index.html`.
 2. Vá em **Settings > Pages**.
 3. Em **Source**, selecione a branch `main` e a pasta `/ (root)`. Salve.
-4. Após 1–2 minutos, o GitHub fornece uma URL HTTPS tipo `https://seuusuario.github.io/nome-do-repo/`.
-5. Abra essa URL no Safari do iPhone.
+4. Após 1–2 minutos, o GitHub fornece uma URL HTTPS.
+5. Abra essa URL (https://ivanmartinotto.github.io/Mobile-GPS-Tracker/) no Safari do iPhone (ou de um android mesmo).
 
-### 3.3. Opção B — Servidor local com ngrok
+### 3.3. Usar no iPhone
 
-Útil para desenvolvimento rápido sem publicar o arquivo online.
-
-```bash
-# Em um terminal, sirva o arquivo local:
-python -m http.server 8000
-
-# Em outro terminal, exponha via HTTPS com ngrok:
-ngrok http 8000
-```
-
-O ngrok fornece uma URL temporária `https://xxxx.ngrok.io`. Abra essa URL no Safari do iPhone.
-
-### 3.4. Usar no iPhone
-
-1. Abra a URL HTTPS no Safari.
+1. Abra a URL HTTPS (https://ivanmartinotto.github.io/Mobile-GPS-Tracker/) no Safari.
 2. Preencha o **ID do dispositivo** com um valor único (ex: `iphone_01`).
-3. Confirme o **tópico base** (padrão `ufscar/automacao/gps` — deve casar com o tópico que o `server.py` está escutando).
+3. Confirme o **tópico base** (padrão `automacao/ufscar/gps` — deve casar com o tópico que o `server.py` está escutando).
 4. Defina o **intervalo** de publicação em segundos.
 5. Toque em **Iniciar**. O Safari vai pedir permissão de localização — aceite.
 6. A tela mostra o status da conexão e a última coordenada publicada.
@@ -211,12 +197,12 @@ Experimentos sugeridos:
 
 ### Nada chega no servidor
 
-1. Verifique se o `server.py` mostrou `Conectado ao broker` e `Inscrito em: ufscar/automacao/gps/+`.
+1. Verifique se o `server.py` mostrou `Conectado ao broker` e `Inscrito em: automacao/ufscar/gps/+`.
 2. Abra o [MQTT WebSocket Client do HiveMQ](https://www.hivemq.com/demos/websocket-client/) em um navegador:
    - Host: `broker.hivemq.com`
    - Port: `8884`
    - Marque **SSL**
-   - Conecte e inscreva-se no tópico `ufscar/automacao/gps/#`.
+   - Conecte e inscreva-se no tópico `automacao/ufscar/gps/#`.
 3. Se as mensagens aparecem no cliente web mas não no `server.py`, o problema está no servidor (tópico incorreto, firewall bloqueando a porta 1883, etc.).
 4. Se não aparecem em lugar nenhum, o problema está no publisher (GPS sem permissão, tópico incorreto, sem internet).
 
