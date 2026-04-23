@@ -158,9 +158,15 @@ A Geolocation API só funciona em páginas servidas via **HTTPS** (exceto `local
 4. Após 1–2 minutos, o GitHub fornece uma URL HTTPS.
 5. Abra essa URL (https://ivanmartinotto.github.io/Mobile-GPS-Tracker/) no Safari do iPhone (ou de um android mesmo).
 
+<<<<<<< HEAD
 ### 3.3. Usar no iPhone
 
 1. Abra a URL HTTPS (https://ivanmartinotto.github.io/Mobile-GPS-Tracker/) no Safari.
+=======
+### 3.4. Usar no iPhone
+
+1. Abra a URL HTTPS no Safari.
+>>>>>>> 515d55738696a52634e46becf80e35ee6ab5f1c6
 2. Preencha o **ID do dispositivo** com um valor único (ex: `iphone_01`).
 3. Confirme o **tópico base** (padrão `automacao/ufscar/gps` — deve casar com o tópico que o `server.py` está escutando).
 4. Defina o **intervalo** de publicação em segundos.
@@ -227,7 +233,7 @@ Experimentos sugeridos:
 
 Para um cenário mais próximo de aplicações reais, migrar para o **HiveMQ Cloud** (gratuito, com TLS e autenticação) é o próximo passo. Apenas as seguintes linhas precisariam mudar:
 
-- No `server.py` e no `gps_publisher.py`: trocar host, porta (`8883`), habilitar TLS e adicionar `username_pw_set`.
+- No `server.py` e no `termux_publisher.py`: trocar host, porta (`8883`), habilitar TLS e adicionar `username_pw_set`.
 - No `index.html`: trocar a URL para `wss://seu-cluster.hivemq.cloud:8884/mqtt` e passar `username` e `password` no `mqtt.connect`.
 
 ---
